@@ -1,0 +1,3 @@
+def hamtProjectDir = file('../hamt-java')
+def rootProjectDescriptor = settings.rootProject
+settings.createProjectDescriptor(rootProjectDescriptor, 'hamt', hamtProjectDir)
