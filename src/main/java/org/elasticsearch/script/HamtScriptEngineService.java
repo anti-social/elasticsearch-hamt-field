@@ -46,10 +46,10 @@ public class HamtScriptEngineService extends NativeScriptEngineService {
         return new SearchScript() {
             @Override
             public LeafSearchScript getLeafSearchScript(LeafReaderContext context) throws IOException {
-                AbstractSearchScript script = (AbstractSearchScript) scriptFactory.newScript(vars);
+                AbstractHamtSearchScript script = (AbstractHamtSearchScript) scriptFactory.newScript(vars);
                 script.setLookup(lookup.getLeafSearchLookup(context));
                 // We need leaf reader instance to get data from lucene
-                ((AbstractHamtSearchScript) script).setLeafReader(context.reader());
+                script.setLeafReader(context.reader());
                 return script;
             }
 
