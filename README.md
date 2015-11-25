@@ -6,7 +6,7 @@ Allows you to store dictionary in lucene index and then use values in scripts.
 
 ## Usage
 
-### Mapping examples:
+### Mapping:
 
 ```json
 {
@@ -24,10 +24,15 @@ Allows you to store dictionary in lucene index and then use values in scripts.
   }
 }
 ```
+#### Mapping options:
 
-`value_type` option can be: byte, short, int, long, float, double. Default is float.
+`value_type` - type of the stored value. Can be: `byte`, `short`, `int`, `long`, `float` and `double`. Default is `float`.
 
-### Document examples:
+`bitmask_size` - defines prefix size of bits for keys in prefix trie, for example `byte` means 3 bits prefix. Can be: `byte`, `short`, `int`, `long`. Default is `short`.
+
+You cannot specify `index` and `doc_values` options for this type of field.
+
+### Document:
 
 `keys` - list of integers.
 
@@ -40,7 +45,7 @@ Allows you to store dictionary in lucene index and then use values in scripts.
 }
 ```
 
-### Script examples:
+### Script:
 
 There are two scripts: `hamt_get` and `hamt_get_scale` (only works for byte value type).
 
