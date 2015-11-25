@@ -3,6 +3,7 @@ apply plugin: 'java'
 description = 'Hash array mapped trie field mapper plugin for ElasticSearch'
 version = '0.1'
 sourceCompatibility = '1.7'
+targetCompatibility = '1.7'
 
 ext {
     elasticsearchVersion = '2.0.0'
