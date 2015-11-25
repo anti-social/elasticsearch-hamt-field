@@ -1,6 +1,4 @@
-# elasticsearch-hamt-field
-
-Hash array mapped trie field for Elasticsearch
+# Hash array mapped trie mapper type for Elasticsearch
 
 Allows you to store dictionary in lucene index and then use values in scripts.
 
@@ -95,3 +93,9 @@ There are two scripts: `hamt_get` and `hamt_get_scale` (only works for byte valu
   }
 }
 ```
+
+## Links
+
+1. https://idea.popcount.org/2012-07-25-introduction-to-hamt/
+2. http://lampwww.epfl.ch/papers/idealhashtrees.pdf
+3. https://github.com/anti-social/hamt-java
