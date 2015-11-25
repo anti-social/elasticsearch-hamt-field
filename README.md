@@ -15,7 +15,7 @@ Zip archive should be into `build/distributions/` directory of the project.
 
 ## Usage
 
-### Mapping
+### Mapping:
 
 ```json
 {
