@@ -4,9 +4,20 @@ Hash array mapped trie field for Elasticsearch
 
 Allows you to store dictionary in lucene index and then use values in scripts.
 
+## Compilation
+
+```bash
+git clone https://github.com/anti-social/hamt-java.git
+git clone https://github.com/anti-social/elasticsearch-hamt-field-mapper.git
+cd elasticsearch-hamt-field-mapper
+gradle build
+```
+
+Zip archive should be into `build/distributions/` directory of the project.
+
 ## Usage
 
-### Mapping:
+### Mapping
 
 ```json
 {
