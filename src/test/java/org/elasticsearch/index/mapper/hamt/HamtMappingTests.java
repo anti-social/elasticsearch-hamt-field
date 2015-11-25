@@ -49,22 +49,36 @@ public class HamtMappingTests extends ESSingleNodeTestCase {
         assertThat(fieldMapper.fieldType(), instanceOf(HamtFieldMapper.HamtFieldType.class));
         assertEquals("hamt", fieldMapper.fieldType().fieldDataType().getType());
 
-        long[] keys = new long[]{ 1L, 2L, 3L };
-        byte[] values = new byte[]{ (byte) 101, (byte) 102, (byte) 103 };
-        byte[] binaryValue = new HAMT.Writer(HAMT.BitmaskSize.SHORT, HAMT.ValueSize.BYTE).dumpBytes(keys, values);
+        long[] keys = new long[]{ 1L, 2L, 3L };;
+        byte[] values = new byte[]{ (byte) 101, (byte) 102, (byte) 103 };;
+        BytesRef binaryValue = new BytesRef(new HAMT.Writer(HAMT.BitmaskSize.SHORT, HAMT.ValueSize.BYTE)
+                                            .dumpBytes(keys, values));
+        BytesRef indexedValue;
+        XContentBuilder fieldDataBuilder;
+        ParseContext.Document doc;
 
-        XContentBuilder fieldDataBuilder = XContentFactory.jsonBuilder()
+        fieldDataBuilder = XContentFactory.jsonBuilder()
             .startObject()
                 .startObject("category_ranks")
                     .array("keys", 1L, 2L, 3L)
                     .array("values", 101, 102, 103)
                 .endObject()
             .endObject();
+        doc = mapper.parse("test", "product", "1", fieldDataBuilder.bytes()).rootDoc();
+        indexedValue = doc.getBinaryValue("category_ranks");
+        assertEquals(binaryValue, indexedValue);
 
-        ParseContext.Document doc = mapper.parse("test", "product", "1", fieldDataBuilder.bytes()).rootDoc();
+        fieldDataBuilder = XContentFactory.jsonBuilder()
+            .startObject()
+                .startObject("category_ranks")
+                    .array("keys", 3L, 2L, 1L)
+                    .array("values", 103, 102, 101)
+                .endObject()
+            .endObject();
+        doc = mapper.parse("test", "product", "1", fieldDataBuilder.bytes()).rootDoc();
 
-        BytesRef indexedValue = doc.getBinaryValue("category_ranks");
-        assertEquals(new BytesRef(binaryValue), indexedValue);
+        indexedValue = doc.getBinaryValue("category_ranks");
+        assertEquals(binaryValue, indexedValue);
     }
 
     public void testFloatHamtMapping() throws Exception {

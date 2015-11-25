@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.IndexOptions;
@@ -323,6 +325,7 @@ public class HamtFieldMapper extends FieldMapper {
         if (value == null) {
             List<Long> keys = new ArrayList<>();
             List<byte[]> values = new ArrayList<>();
+
             XContentParser.Token token = context.parser().currentToken();
             // its an object of keys and values { "keys": [1, 2, 3], "values": [1.4, 1.5, 1.6] }
             if (token == XContentParser.Token.START_OBJECT) {
@@ -344,7 +347,17 @@ public class HamtFieldMapper extends FieldMapper {
             //     keys = parseKeys(context.parser());
             //     values = parseValues(context.parser());
             // }
-            value = this.hamtWriter.dump(keys, values);
+
+            if (keys.size() != values.size()) {
+                throw new MapperParsingException("'keys' and 'length' have different size.");
+            }
+
+            SortedMap<Long, byte[]> entries = new TreeMap<>();
+            for (int i = 0; i < keys.size(); i++) {
+                entries.put(keys.get(i), values.get(i));
+            }
+
+            value = this.hamtWriter.dump(entries);
         }
 
         if (value == null) {
