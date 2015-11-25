@@ -49,6 +49,8 @@ You cannot specify `index` and `doc_values` options for this type of field.
 
 There are two scripts: `hamt_get` and `hamt_get_scale` (only works for byte value type).
 
+`hamt_get` gets value from field by specified key:
+
 ```json
 {
   "function_score": {
@@ -63,6 +65,8 @@ There are two scripts: `hamt_get` and `hamt_get_scale` (only works for byte valu
   }
 }
 ```
+
+`hamt_get_scale` gets value and scales it in range of [`min_value`, `max_value`]. ONLY for `byte` values.
 
 ```json
 {
