@@ -2,6 +2,7 @@ apply plugin: 'java'
 
 description = 'Hash array mapped trie field mapper plugin for ElasticSearch'
 version = '0.1'
+sourceCompatibility = '1.7'
 
 ext {
     elasticsearchVersion = '2.0.0'
@@ -9,9 +10,8 @@ ext {
 
     pluginName = 'hamt-field-mapper'
     pluginClassname = 'org.elasticsearch.plugin.mapper.MapperHamtPlugin'
-    pluginMetadataDir = 'plugin-metadata'
-    pluginMetadataProperties = 'plugin-descriptor.properties'
     dependenciesDir = "${buildDir}/dependencies"
+    pluginMetadataFilename = 'plugin-descriptor.properties'
 }
 
 repositories {
@@ -42,28 +42,25 @@ task copyDependencies(type: Copy) {
     include 'hamt-*.jar'
 }
 
-task processPluginMetadata(type: Copy) {
-    def tokens = [
-        pluginName: pluginName,
-        pluginClassname: pluginClassname,
-        description: project.description,
-        version: project.version,
-        elasticsearchVersion: elasticsearchVersion
-    ]
-    def engine = new groovy.text.GStringTemplateEngine()
-
-    from "${pluginMetadataDir}/${pluginMetadataProperties}"
-    into "${buildDir}/${pluginMetadataDir}/"
-    filter {
-        engine.createTemplate(it).make(tokens).toString()
-    }
+task processPluginMetadata << {
+    def pluginMetadataFile = new File("${buildDir}/${pluginMetadataFilename}")
+    pluginMetadataFile.text = """
+name=${pluginName}
+description=${project.description}
+version=${project.version}
+classname=${pluginClassname}
+site=false
+jvm=true
+java.version=${sourceCompatibility}
+elasticsearch.version=${elasticsearchVersion}
+"""
 }
 processPluginMetadata.outputs.upToDateWhen { false }
 
 task buildZip(type: Zip) {
     from jar
     from dependenciesDir
-    from "${buildDir}/${pluginMetadataDir}/${pluginMetadataProperties}"
+    from "${buildDir}/${pluginMetadataFilename}"
 }
 
 build.dependsOn buildZip
