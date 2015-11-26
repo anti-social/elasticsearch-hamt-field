@@ -7,7 +7,7 @@ targetCompatibility = '1.7'
 
 ext {
     defaultElasticsearchVersion = '2.0.1'
-    elasticsearchVersion = "${esVersion ?: defaultElasticsearchVersion}"
+    elasticsearchVersion = project.hasProperty('esVersion') ? project.getProperty('esVersion') : defaultElasticsearchVersion
     luceneVersion = '5.2.1'
 
     pluginName = 'hamt-field-mapper'
