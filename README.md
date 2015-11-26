@@ -8,6 +8,7 @@ Allows you to store dictionary in lucene index and then use values in scripts.
 git clone https://github.com/anti-social/hamt-java.git
 git clone https://github.com/anti-social/elasticsearch-hamt-field-mapper.git
 cd elasticsearch-hamt-field-mapper
+git checkout es-2.0
 gradle build
 ```
 
