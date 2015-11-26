@@ -13,6 +13,12 @@ gradle build
 
 Zip archive should be into `build/distributions/` directory of the project.
 
+If you want to compile plugin with another version of Elasticsearch you can set `esVersion` property:
+
+```bash
+gradle -PesVersion=2.0.0 build
+```
+
 ## Usage
 
 ### Mapping:
