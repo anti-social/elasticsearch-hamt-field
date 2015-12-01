@@ -32,8 +32,11 @@ public class HamtGetScaleScript extends AbstractHamtSearchScript {
     @Override
     public float runAsFloat() {
         HamtFieldMapper.HamtFieldType fieldType = (HamtFieldMapper.HamtFieldType) (doc().mapperService().smartNameFieldType(fieldName));
+        if (fieldType == null) {
+            throw new IllegalStateException("No field found for [" + fieldName + "]; expected [hamt] field type");
+        }
         if (fieldType.valueType() != HamtFieldMapper.ValueType.BYTE) {
-            throw new IllegalStateException("Only 'byte' value type is supported");
+            throw new IllegalStateException("Only [byte] value type is supported; [" + fieldType.valueType().toString().toLowerCase() +  "] found");
         }
 
         BinaryDocValues docValues = localDocValuesCache.get(reader);
@@ -44,6 +47,10 @@ public class HamtGetScaleScript extends AbstractHamtSearchScript {
             } catch (IOException e) {
                 throw new IllegalStateException("Cannot load doc values", e);
             }
+        }
+
+        if (docValues == null) {
+            return this.scaleTable[defaultValue & 0xff];
         }
 
         BytesRef data = docValues.get(docId);
@@ -64,12 +71,12 @@ public class HamtGetScaleScript extends AbstractHamtSearchScript {
         public ExecutableScript newScript(@Nullable Map<String, Object> params) {
             String fieldName = params == null ? null : XContentMapValues.nodeStringValue(params.get("field"), null);
             if (fieldName == null) {
-                throw new ScriptException("Missing the 'field' parameter");
+                throw new ScriptException("Missing the [field] parameter");
             }
 
             Object keyParam = params.get("key");
             if (keyParam == null) {
-                throw new ScriptException("Missing the 'key' parameter");
+                throw new ScriptException("Missing the [key] parameter");
             }
             long key = params == null ? null : XContentMapValues.nodeLongValue(keyParam);
             
@@ -77,13 +84,13 @@ public class HamtGetScaleScript extends AbstractHamtSearchScript {
 
             Object minValueParam = params.get("min_value");
             if (minValueParam == null) {
-                throw new ScriptException("Missing the 'min_value' parameter");
+                throw new ScriptException("Missing the [min_value] parameter");
             }
             double minValue = params == null ? null : XContentMapValues.nodeDoubleValue(minValueParam);
 
             Object maxValueParam = params.get("max_value");
             if (maxValueParam == null) {
-                throw new ScriptException("Missing the 'max_value' parameter");
+                throw new ScriptException("Missing the [max_value] parameter");
             }
             double maxValue = params == null ? null : XContentMapValues.nodeDoubleValue(maxValueParam);
 

@@ -30,6 +30,10 @@ public class HamtGetScript extends AbstractHamtSearchScript {
     @Override
     public float runAsFloat() {
         HamtFieldMapper.HamtFieldType fieldType = (HamtFieldMapper.HamtFieldType) (doc().mapperService().smartNameFieldType(fieldName));
+        if (fieldType == null) {
+            throw new IllegalStateException("No field found for [" + fieldName + "]; expected [hamt] field type");
+        }
+        
         BinaryDocValues docValues = localDocValuesCache.get(reader);
         if (docValues == null) {
             try {
@@ -38,6 +42,10 @@ public class HamtGetScript extends AbstractHamtSearchScript {
             } catch (IOException e) {
                 throw new IllegalStateException("Cannot load doc values", e);
             }
+        }
+
+        if (docValues == null) {
+            return defaultValue;
         }
 
         BytesRef data = docValues.get(docId);
@@ -56,14 +64,17 @@ public class HamtGetScript extends AbstractHamtSearchScript {
     public static class Factory implements NativeScriptFactory {
         @Override
         public ExecutableScript newScript(@Nullable Map<String, Object> params) {
+            System.out.println("HamtGetScript::newScript");
+            System.out.println(params);
             String fieldName = params == null ? null : XContentMapValues.nodeStringValue(params.get("field"), null);
             if (fieldName == null) {
-                throw new ScriptException("Missing the field parameter");
+                System.out.println("Missing the [field] parameter");
+                throw new ScriptException("Missing the [field] parameter");
             }
 
             Object keyParam = params.get("key");
             if (keyParam == null) {
-                throw new ScriptException("Missing the key parameter");
+                throw new ScriptException("Missing the [key] parameter");
             }
             long key = params == null ? null : XContentMapValues.nodeLongValue(keyParam);
 
