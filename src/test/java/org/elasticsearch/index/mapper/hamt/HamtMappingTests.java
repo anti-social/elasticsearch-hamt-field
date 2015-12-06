@@ -1,6 +1,7 @@
 package org.elasticsearch.index.mapper.hamt;
 
-import hamt.HAMT;
+import net.uaprom.htable.HashTable;
+import net.uaprom.htable.TrieHashTable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +52,7 @@ public class HamtMappingTests extends ESSingleNodeTestCase {
 
         long[] keys = new long[]{ 1L, 2L, 3L };;
         byte[] values = new byte[]{ (byte) 101, (byte) 102, (byte) 103 };;
-        BytesRef binaryValue = new BytesRef(new HAMT.Writer(HAMT.BitmaskSize.SHORT, HAMT.ValueSize.BYTE)
+        BytesRef binaryValue = new BytesRef(new TrieHashTable.Writer(TrieHashTable.BitmaskSize.SHORT, HashTable.ValueSize.BYTE)
                                             .dumpBytes(keys, values));
         BytesRef indexedValue;
         XContentBuilder fieldDataBuilder;
@@ -111,7 +112,7 @@ public class HamtMappingTests extends ESSingleNodeTestCase {
 
         long[] keys = new long[]{ 1L, 2L, 3L };
         float[] values = new float[]{ 101.1f, 102.2f, 103.3f };
-        byte[] binaryValue = new HAMT.Writer(HAMT.BitmaskSize.SHORT, HAMT.ValueSize.INT).dumpFloats(keys, values);
+        byte[] binaryValue = new TrieHashTable.Writer(TrieHashTable.BitmaskSize.SHORT, HashTable.ValueSize.INT).dumpFloats(keys, values);
 
         XContentBuilder fieldDataBuilder = XContentFactory.jsonBuilder()
             .startObject()

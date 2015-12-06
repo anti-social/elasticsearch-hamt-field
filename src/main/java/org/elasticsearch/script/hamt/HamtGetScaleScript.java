@@ -5,7 +5,8 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 
-import hamt.HAMT;
+import net.uaprom.htable.HashTable;
+import net.uaprom.htable.TrieHashTable;
 
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.util.BytesRef;
@@ -58,12 +59,12 @@ public class HamtGetScaleScript extends AbstractHamtSearchScript {
             return this.scaleTable[defaultValue & 0xff];
         }
 
-        HAMT.Reader hamtReader = new HAMT.Reader(data.bytes);
-        int valueOffset = hamtReader.getValueOffset(key);
-        if (valueOffset == HAMT.Reader.NOT_FOUND_OFFSET) {
+        HashTable.Reader htableReader = new TrieHashTable.Reader(data.bytes);
+        int valueOffset = htableReader.getValueOffset(key);
+        if (valueOffset == HashTable.Reader.NOT_FOUND_OFFSET) {
             return this.scaleTable[defaultValue & 0xff];
         }
-        return this.scaleTable[hamtReader.getByte(valueOffset) & 0xff];
+        return this.scaleTable[htableReader.getByte(valueOffset) & 0xff];
     }
 
     public static class Factory implements NativeScriptFactory {
