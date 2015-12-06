@@ -5,7 +5,8 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 
-import hamt.HAMT;
+import net.uaprom.htable.HashTable;
+import net.uaprom.htable.TrieHashTable;
 
 import org.apache.lucene.index.BinaryDocValues;
 import org.apache.lucene.index.LeafReader;
@@ -53,22 +54,19 @@ public class HamtGetScript extends AbstractHamtSearchScript {
             return defaultValue;
         }
 
-        HAMT.Reader hamtReader = new HAMT.Reader(data.bytes);
-        int valueOffset = hamtReader.getValueOffset(key);
-        if (valueOffset == HAMT.Reader.NOT_FOUND_OFFSET) {
+        HashTable.Reader htableReader = new TrieHashTable.Reader(data.bytes);
+        int valueOffset = htableReader.getValueOffset(key);
+        if (valueOffset == HashTable.Reader.NOT_FOUND_OFFSET) {
             return defaultValue;
         }
-        return fieldType.valueType().getValue(hamtReader, valueOffset);
+        return fieldType.valueType().getValue(htableReader, valueOffset);
     }
 
     public static class Factory implements NativeScriptFactory {
         @Override
         public ExecutableScript newScript(@Nullable Map<String, Object> params) {
-            System.out.println("HamtGetScript::newScript");
-            System.out.println(params);
             String fieldName = params == null ? null : XContentMapValues.nodeStringValue(params.get("field"), null);
             if (fieldName == null) {
-                System.out.println("Missing the [field] parameter");
                 throw new ScriptException("Missing the [field] parameter");
             }
 

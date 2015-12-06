@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    compile project(':hamt')
+    compile project(':htable')
     compile "org.elasticsearch:elasticsearch:$elasticsearchVersion"
     testCompile('org.hamcrest:hamcrest-all:1.3') {
         exclude module: 'hamcrest-core'

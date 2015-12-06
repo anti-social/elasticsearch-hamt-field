@@ -1,6 +1,7 @@
 package org.elasticsearch.index.mapper.hamt;
 
-import hamt.HAMT;
+import net.uaprom.htable.HashTable;
+import net.uaprom.htable.TrieHashTable;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,7 +31,7 @@ import static org.elasticsearch.index.mapper.core.TypeParsers.parseField;
 
 
 public class HamtFieldMapper extends FieldMapper {
-    private final HAMT.Writer hamtWriter;
+    private final HashTable.Writer htableWriter;
     private final ValueParser valueParser;
 
     public static final String CONTENT_TYPE = "hamt";
@@ -45,11 +46,11 @@ public class HamtFieldMapper extends FieldMapper {
         }
 
         public static ValueType VALUE_TYPE = ValueType.FLOAT;
-        public static HAMT.BitmaskSize BITMASK_SIZE = HAMT.BitmaskSize.SHORT;
+        public static TrieHashTable.BitmaskSize BITMASK_SIZE = TrieHashTable.BitmaskSize.SHORT;
     }
 
     public static enum ValueType {
-        BYTE(HAMT.ValueSize.BYTE) {
+        BYTE(HashTable.ValueSize.BYTE) {
             @Override
             public ValueParser parser() {
                 return new ValueParser() {
@@ -61,11 +62,11 @@ public class HamtFieldMapper extends FieldMapper {
             }
 
             @Override
-            public float getValue(HAMT.Reader hamtReader, int valueOffset) {
-                return hamtReader.getByte(valueOffset) & 0xff;
+            public float getValue(HashTable.Reader htableReader, int valueOffset) {
+                return htableReader.getByte(valueOffset) & 0xff;
             }
         },
-        SHORT(HAMT.ValueSize.SHORT) {
+        SHORT(HashTable.ValueSize.SHORT) {
             @Override
             public ValueParser parser() {
                 return new ValueParser() {
@@ -78,11 +79,11 @@ public class HamtFieldMapper extends FieldMapper {
             }
 
             @Override
-            public float getValue(HAMT.Reader hamtReader, int valueOffset) {
-                return hamtReader.getShort(valueOffset)  & 0xffff;
+            public float getValue(HashTable.Reader htableReader, int valueOffset) {
+                return htableReader.getShort(valueOffset)  & 0xffff;
             }
         },
-        INT(HAMT.ValueSize.INT) {
+        INT(HashTable.ValueSize.INT) {
             @Override
             public ValueParser parser() {
                 return new ValueParser() {
@@ -95,11 +96,11 @@ public class HamtFieldMapper extends FieldMapper {
             }
 
             @Override
-            public float getValue(HAMT.Reader hamtReader, int valueOffset) {
-                return hamtReader.getInt(valueOffset);
+            public float getValue(HashTable.Reader htableReader, int valueOffset) {
+                return htableReader.getInt(valueOffset);
             }
         },
-        LONG(HAMT.ValueSize.LONG) {
+        LONG(HashTable.ValueSize.LONG) {
             @Override
             public ValueParser parser() {
                 return new ValueParser() {
@@ -112,11 +113,11 @@ public class HamtFieldMapper extends FieldMapper {
             }
 
             @Override
-            public float getValue(HAMT.Reader hamtReader, int valueOffset) {
-                return hamtReader.getLong(valueOffset);
+            public float getValue(HashTable.Reader htableReader, int valueOffset) {
+                return htableReader.getLong(valueOffset);
             }
         },
-        FLOAT(HAMT.ValueSize.INT) {
+        FLOAT(HashTable.ValueSize.INT) {
             @Override
             public ValueParser parser() {
                 return new ValueParser() {
@@ -129,11 +130,11 @@ public class HamtFieldMapper extends FieldMapper {
             }
 
             @Override
-            public float getValue(HAMT.Reader hamtReader, int valueOffset) {
-                return hamtReader.getFloat(valueOffset);
+            public float getValue(HashTable.Reader htableReader, int valueOffset) {
+                return htableReader.getFloat(valueOffset);
             }
         },
-        DOUBLE(HAMT.ValueSize.LONG) {
+        DOUBLE(HashTable.ValueSize.LONG) {
             @Override
             public ValueParser parser() {
                 return new ValueParser() {
@@ -146,20 +147,20 @@ public class HamtFieldMapper extends FieldMapper {
             }
 
             @Override
-            public float getValue(HAMT.Reader hamtReader, int valueOffset) {
-                return (float) (hamtReader.getDouble(valueOffset));
+            public float getValue(HashTable.Reader htableReader, int valueOffset) {
+                return (float) (htableReader.getDouble(valueOffset));
             }
         };
 
-        public final HAMT.ValueSize valueSize;
+        public final HashTable.ValueSize valueSize;
 
-        ValueType(HAMT.ValueSize valueSize) {
+        ValueType(HashTable.ValueSize valueSize) {
             this.valueSize = valueSize;
         }
 
         public abstract ValueParser parser();
 
-        public abstract float getValue(HAMT.Reader hamtReader, int valueOffset);
+        public abstract float getValue(HashTable.Reader htableReader, int valueOffset);
     }
 
     interface ValueParser {
@@ -168,7 +169,7 @@ public class HamtFieldMapper extends FieldMapper {
 
     public static class Builder extends FieldMapper.Builder<Builder, HamtFieldMapper> {
         private ValueType valueType = ValueType.FLOAT;
-        private HAMT.BitmaskSize bitmaskSize = HAMT.BitmaskSize.SHORT;
+        private TrieHashTable.BitmaskSize bitmaskSize = TrieHashTable.BitmaskSize.SHORT;
 
         public Builder(String name) {
             super(name, Defaults.FIELD_TYPE);
@@ -180,7 +181,7 @@ public class HamtFieldMapper extends FieldMapper {
             return this;
         }
 
-        public Builder bitmaskSize(HAMT.BitmaskSize bitmaskSize) {
+        public Builder bitmaskSize(TrieHashTable.BitmaskSize bitmaskSize) {
             this.bitmaskSize = bitmaskSize;
             return this;
         }
@@ -202,7 +203,7 @@ public class HamtFieldMapper extends FieldMapper {
             return new HamtFieldMapper(name,
                                        fieldType,
                                        defaultFieldType,
-                                       new HAMT.Writer(bitmaskSize, valueType.valueSize),
+                                       new TrieHashTable.Writer(bitmaskSize, valueType.valueSize),
                                        valueType.parser(),
                                        context.indexSettings(),
                                        multiFieldsBuilder.build(this, context),
@@ -223,7 +224,7 @@ public class HamtFieldMapper extends FieldMapper {
                     builder.valueType(ValueType.valueOf(propNode.toString().toUpperCase()));
                     iterator.remove();
                 } else if (propName.equals("bitmask_size")) {
-                    builder.bitmaskSize(HAMT.BitmaskSize.valueOf(propNode.toString().toUpperCase()));
+                    builder.bitmaskSize(TrieHashTable.BitmaskSize.valueOf(propNode.toString().toUpperCase()));
                     iterator.remove();
                 } else if (propName.equals("index")) {
                     throw new MapperParsingException("Setting [index] cannot be modified for field [" + name + "]");
@@ -237,7 +238,7 @@ public class HamtFieldMapper extends FieldMapper {
 
     public static final class HamtFieldType extends MappedFieldType {
         private ValueType valueType;
-        private HAMT.BitmaskSize bitmaskSize;
+        private TrieHashTable.BitmaskSize bitmaskSize;
 
         public HamtFieldType() {}
 
@@ -263,20 +264,20 @@ public class HamtFieldMapper extends FieldMapper {
             return valueType;
         }
 
-        public void setBitmaskSize(HAMT.BitmaskSize bitmaskSize) {
+        public void setBitmaskSize(TrieHashTable.BitmaskSize bitmaskSize) {
             this.bitmaskSize = bitmaskSize;
         }
 
-        public HAMT.BitmaskSize bitmaskSize() {
+        public TrieHashTable.BitmaskSize bitmaskSize() {
             return bitmaskSize;
         }
     }
 
     protected HamtFieldMapper(String simpleName, MappedFieldType fieldType, MappedFieldType defaultFieldType,
-                              HAMT.Writer hamtWriter, ValueParser valueParser,
+                              HashTable.Writer htableWriter, ValueParser valueParser,
                               Settings indexSettings, MultiFields multiFields, CopyTo copyTo) {
         super(simpleName, fieldType, defaultFieldType, indexSettings, multiFields, copyTo);
-        this.hamtWriter = hamtWriter;
+        this.htableWriter = htableWriter;
         this.valueParser = valueParser;
     }
 
@@ -357,7 +358,7 @@ public class HamtFieldMapper extends FieldMapper {
                 entries.put(keys.get(i), values.get(i));
             }
 
-            value = this.hamtWriter.dump(entries);
+            value = this.htableWriter.dump(entries);
         }
 
         if (value == null) {
