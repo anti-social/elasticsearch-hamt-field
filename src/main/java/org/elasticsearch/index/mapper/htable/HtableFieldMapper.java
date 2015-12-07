@@ -1,6 +1,7 @@
-package org.elasticsearch.index.mapper.hamt;
+package org.elasticsearch.index.mapper.htable;
 
 import net.uaprom.htable.HashTable;
+import net.uaprom.htable.ChainHashTable;
 import net.uaprom.htable.TrieHashTable;
 
 import java.io.IOException;
@@ -20,6 +21,7 @@ import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.support.XContentMapValues;
 import org.elasticsearch.index.mapper.FieldMapper;
 import org.elasticsearch.index.mapper.MappedFieldType;
 import org.elasticsearch.index.mapper.Mapper;
@@ -30,14 +32,14 @@ import org.elasticsearch.index.mapper.core.NumberFieldMapper;
 import static org.elasticsearch.index.mapper.core.TypeParsers.parseField;
 
 
-public class HamtFieldMapper extends FieldMapper {
+public class HtableFieldMapper extends FieldMapper {
     private final HashTable.Writer htableWriter;
     private final ValueParser valueParser;
 
-    public static final String CONTENT_TYPE = "hamt";
+    public static final String CONTENT_TYPE = "htable";
 
     public static class Defaults {
-        public static final MappedFieldType FIELD_TYPE = new HamtFieldType();
+        public static final MappedFieldType FIELD_TYPE = new HtableFieldType();
 
         static {
             FIELD_TYPE.setIndexOptions(IndexOptions.NONE);
@@ -46,7 +48,7 @@ public class HamtFieldMapper extends FieldMapper {
         }
 
         public static ValueType VALUE_TYPE = ValueType.FLOAT;
-        public static TrieHashTable.BitmaskSize BITMASK_SIZE = TrieHashTable.BitmaskSize.SHORT;
+        public static String FORMAT = "chain";
     }
 
     public static enum ValueType {
@@ -167,9 +169,9 @@ public class HamtFieldMapper extends FieldMapper {
         byte[] parseValue(XContentParser parser) throws IOException;
     }
 
-    public static class Builder extends FieldMapper.Builder<Builder, HamtFieldMapper> {
+    public static class Builder extends FieldMapper.Builder<Builder, HtableFieldMapper> {
         private ValueType valueType = ValueType.FLOAT;
-        private TrieHashTable.BitmaskSize bitmaskSize = TrieHashTable.BitmaskSize.SHORT;
+        private Map<String, Object> dataFormatParams = null;
 
         public Builder(String name) {
             super(name, Defaults.FIELD_TYPE);
@@ -181,8 +183,8 @@ public class HamtFieldMapper extends FieldMapper {
             return this;
         }
 
-        public Builder bitmaskSize(TrieHashTable.BitmaskSize bitmaskSize) {
-            this.bitmaskSize = bitmaskSize;
+        public Builder dataFormatParams(Map<String, Object> dataFormatParams) {
+            this.dataFormatParams = dataFormatParams;
             return this;
         }
 
@@ -196,25 +198,45 @@ public class HamtFieldMapper extends FieldMapper {
         }
 
         @Override
-        public HamtFieldMapper build(BuilderContext context) {
+        public HtableFieldMapper build(BuilderContext context) {
             setupFieldType(context);
-            ((HamtFieldType) fieldType).setValueType(valueType);
-            ((HamtFieldType) fieldType).setBitmaskSize(bitmaskSize);
-            return new HamtFieldMapper(name,
-                                       fieldType,
-                                       defaultFieldType,
-                                       new TrieHashTable.Writer(bitmaskSize, valueType.valueSize),
-                                       valueType.parser(),
-                                       context.indexSettings(),
-                                       multiFieldsBuilder.build(this, context),
-                                       copyTo);
+            ((HtableFieldType) fieldType).setValueType(valueType);
+            ((HtableFieldType) fieldType).setDataFormatParams(dataFormatParams);
+            HashTable.Writer htableWriter = null;
+            if (dataFormatParams == null) {
+                htableWriter = new ChainHashTable.Writer(valueType.valueSize);
+            } else {
+                String format = XContentMapValues.nodeStringValue(dataFormatParams.get("format"), Defaults.FORMAT);
+                if (format.equals("chain")) {
+                    int fillingRatio = XContentMapValues.nodeIntegerValue(dataFormatParams.get("filling_ratio"), ChainHashTable.Writer.DEFAULT_FILLING_RATIO);
+                    int minHashTableSize = XContentMapValues.nodeIntegerValue(dataFormatParams.get("min_hash_table_size"), ChainHashTable.Writer.DEFAULT_MIN_HASH_TABLE_SIZE);
+                    htableWriter = new ChainHashTable.Writer(valueType.valueSize, fillingRatio, minHashTableSize);
+                } else if (format.equals("trie")) {
+                    TrieHashTable.BitmaskSize bitmaskSize;
+                    String bitmaskSizeParam = XContentMapValues.nodeStringValue(dataFormatParams.get("bitmask_size"), null);
+                    if (bitmaskSizeParam != null) {
+                        bitmaskSize = TrieHashTable.BitmaskSize.valueOf(bitmaskSizeParam.toUpperCase());
+                    } else {
+                        bitmaskSize = TrieHashTable.BitmaskSize.SHORT;
+                    }
+                    htableWriter = new TrieHashTable.Writer(bitmaskSize, valueType.valueSize);
+                }
+            }
+            return new HtableFieldMapper(name,
+                                         fieldType,
+                                         defaultFieldType,
+                                         htableWriter,
+                                         valueType.parser(),
+                                         context.indexSettings(),
+                                         multiFieldsBuilder.build(this, context),
+                                         copyTo);
         }
     }
 
     public static class TypeParser implements Mapper.TypeParser {
         @Override
         public Mapper.Builder parse(String name, Map<String, Object> node, ParserContext parserContext) throws MapperParsingException {
-            HamtFieldMapper.Builder builder = new HamtFieldMapper.Builder(name);
+            HtableFieldMapper.Builder builder = new HtableFieldMapper.Builder(name);
             parseField(builder, name, node, parserContext);
             for (Iterator<Map.Entry<String, Object>> iterator = node.entrySet().iterator(); iterator.hasNext();) {
                 Map.Entry<String, Object> entry = iterator.next();
@@ -223,8 +245,12 @@ public class HamtFieldMapper extends FieldMapper {
                 if (propName.equals("value_type")) {
                     builder.valueType(ValueType.valueOf(propNode.toString().toUpperCase()));
                     iterator.remove();
-                } else if (propName.equals("bitmask_size")) {
-                    builder.bitmaskSize(TrieHashTable.BitmaskSize.valueOf(propNode.toString().toUpperCase()));
+                } else if (propName.equals("params")) {
+                    Map<String, Object> dataFormatParams = (Map<String, Object>) propNode;
+                    builder.dataFormatParams(dataFormatParams);
+                    if (!dataFormatParams.containsKey("format")) {
+                        throw new MapperParsingException("[format] can be [chain] or [trie]");
+                    }
                     iterator.remove();
                 } else if (propName.equals("index")) {
                     throw new MapperParsingException("Setting [index] cannot be modified for field [" + name + "]");
@@ -236,19 +262,19 @@ public class HamtFieldMapper extends FieldMapper {
         }
     }
 
-    public static final class HamtFieldType extends MappedFieldType {
+    public static final class HtableFieldType extends MappedFieldType {
         private ValueType valueType;
-        private TrieHashTable.BitmaskSize bitmaskSize;
+        Map<String, Object> dataFormatParams;
 
-        public HamtFieldType() {}
+        public HtableFieldType() {}
 
-        protected HamtFieldType(HamtFieldType ref) {
+        protected HtableFieldType(HtableFieldType ref) {
             super(ref);
         }
 
         @Override
         public MappedFieldType clone() {
-            return new HamtFieldType(this);
+            return new HtableFieldType(this);
         }
 
         @Override
@@ -264,26 +290,34 @@ public class HamtFieldMapper extends FieldMapper {
             return valueType;
         }
 
-        public void setBitmaskSize(TrieHashTable.BitmaskSize bitmaskSize) {
-            this.bitmaskSize = bitmaskSize;
+        public void setDataFormatParams(Map<String, Object> dataFormatParams) {
+            this.dataFormatParams = dataFormatParams;
         }
 
-        public TrieHashTable.BitmaskSize bitmaskSize() {
-            return bitmaskSize;
+        public Map<String, Object> dataFormatParams() {
+            return dataFormatParams;
+        }
+
+        public HashTable.Reader hashTableReader(BytesRef data) {
+            String format = dataFormatParams == null ? Defaults.FORMAT : XContentMapValues.nodeStringValue(dataFormatParams.get("format"), Defaults.FORMAT);
+            if (format.equals("trie")) {
+                return new TrieHashTable.Reader(data.bytes);
+            }
+            return new ChainHashTable.Reader(data.bytes);
         }
     }
 
-    protected HamtFieldMapper(String simpleName, MappedFieldType fieldType, MappedFieldType defaultFieldType,
-                              HashTable.Writer htableWriter, ValueParser valueParser,
-                              Settings indexSettings, MultiFields multiFields, CopyTo copyTo) {
+    protected HtableFieldMapper(String simpleName, MappedFieldType fieldType, MappedFieldType defaultFieldType,
+                                HashTable.Writer htableWriter, ValueParser valueParser,
+                                Settings indexSettings, MultiFields multiFields, CopyTo copyTo) {
         super(simpleName, fieldType, defaultFieldType, indexSettings, multiFields, copyTo);
         this.htableWriter = htableWriter;
         this.valueParser = valueParser;
     }
 
     @Override
-    public HamtFieldType fieldType() {
-        return (HamtFieldType) super.fieldType();
+    public HtableFieldType fieldType() {
+        return (HtableFieldType) super.fieldType();
     }
 
     @Override
@@ -380,8 +414,9 @@ public class HamtFieldMapper extends FieldMapper {
 
         if (includeDefaults || fieldType().valueType() != Defaults.VALUE_TYPE) {
             builder.field("value_type", fieldType().valueType().toString().toLowerCase());
-        } else if (includeDefaults || fieldType().bitmaskSize() != Defaults.BITMASK_SIZE) {
-            builder.field("bitmask_size", fieldType().bitmaskSize().toString().toLowerCase());
+        }
+        if (fieldType().dataFormatParams() != null) {
+            builder.field("params", fieldType().dataFormatParams());
         }
     }
 }

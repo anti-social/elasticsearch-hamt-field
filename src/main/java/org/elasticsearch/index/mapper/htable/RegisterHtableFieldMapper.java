@@ -1,4 +1,4 @@
-package org.elasticsearch.index.mapper.hamt;
+package org.elasticsearch.index.mapper.htable;
 
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
@@ -8,11 +8,11 @@ import org.elasticsearch.index.mapper.MapperService;
 import org.elasticsearch.index.settings.IndexSettings;
 
 
-public class RegisterHamtFieldMapper extends AbstractIndexComponent {
+public class RegisterHtableFieldMapper extends AbstractIndexComponent {
     @Inject
-    public RegisterHamtFieldMapper(Index index, @IndexSettings Settings indexSettings, MapperService mapperService) {
+    public RegisterHtableFieldMapper(Index index, @IndexSettings Settings indexSettings, MapperService mapperService) {
         super(index, indexSettings);
 
-        mapperService.documentMapperParser().putTypeParser("hamt", new HamtFieldMapper.TypeParser());
+        mapperService.documentMapperParser().putTypeParser("htable", new HtableFieldMapper.TypeParser());
     }
 }

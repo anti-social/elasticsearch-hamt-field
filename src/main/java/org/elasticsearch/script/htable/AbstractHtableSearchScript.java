@@ -1,4 +1,4 @@
-package org.elasticsearch.script.hamt;
+package org.elasticsearch.script.htable;
 
 import java.util.Map;
 
@@ -13,7 +13,7 @@ import org.elasticsearch.search.lookup.LeafDocLookup;
 import org.elasticsearch.search.lookup.LeafSearchLookup;
 
 
-public abstract class AbstractHamtSearchScript extends AbstractExecutableScript implements LeafSearchScript {
+public abstract class AbstractHtableSearchScript extends AbstractExecutableScript implements LeafSearchScript {
     protected final String fieldName;
     protected final long key;
 
@@ -25,7 +25,7 @@ public abstract class AbstractHamtSearchScript extends AbstractExecutableScript 
 
     protected final Map<LeafReader, BinaryDocValues> localDocValuesCache = Maps.newHashMapWithExpectedSize(1);
 
-    protected AbstractHamtSearchScript(String fieldName, long key) {
+    protected AbstractHtableSearchScript(String fieldName, long key) {
         this.fieldName = fieldName;
         this.key = key;
     }
