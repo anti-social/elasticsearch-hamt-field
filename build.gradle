@@ -10,8 +10,8 @@ ext {
     elasticsearchVersion = project.hasProperty('esVersion') ? project.getProperty('esVersion') : defaultElasticsearchVersion
     luceneVersion = '5.2.1'
 
-    pluginName = 'hamt-field-mapper'
-    pluginClassname = 'org.elasticsearch.plugin.mapper.MapperHamtPlugin'
+    pluginName = 'htable-field-mapper'
+    pluginClassname = 'org.elasticsearch.plugin.mapper.MapperHtablePlugin'
     dependenciesDir = "${buildDir}/dependencies"
     pluginMetadataFilename = 'plugin-descriptor.properties'
 }
@@ -41,7 +41,7 @@ dependencies {
 task copyDependencies(type: Copy) {
     from configurations.runtime
     into dependenciesDir
-    include 'hamt-*.jar'
+    include 'htable-*.jar'
 }
 
 task processPluginMetadata << {

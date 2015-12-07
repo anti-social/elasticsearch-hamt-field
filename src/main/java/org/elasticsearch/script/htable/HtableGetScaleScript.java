@@ -1,4 +1,4 @@
-package org.elasticsearch.script.hamt;
+package org.elasticsearch.script.htable;
 
 import java.io.IOException;
 import java.util.Map;
@@ -13,18 +13,18 @@ import org.apache.lucene.util.BytesRef;
 import org.elasticsearch.common.Nullable;
 import org.elasticsearch.common.xcontent.support.XContentMapValues;
 import org.elasticsearch.index.fielddata.ScriptDocValues;
-import org.elasticsearch.index.mapper.hamt.HamtFieldMapper;
+import org.elasticsearch.index.mapper.htable.HtableFieldMapper;
 import org.elasticsearch.script.ExecutableScript;
 import org.elasticsearch.script.NativeScriptFactory;
 import org.elasticsearch.script.ScriptException;
 
 
-public class HamtGetScaleScript extends AbstractHamtSearchScript {
+public class HtableGetScaleScript extends AbstractHtableSearchScript {
     private final byte defaultValue;
 
     private final float[] scaleTable;
 
-    private HamtGetScaleScript(String fieldName, long key, byte defaultValue, float[] scaleTable) {
+    private HtableGetScaleScript(String fieldName, long key, byte defaultValue, float[] scaleTable) {
         super(fieldName, key);
         this.defaultValue = defaultValue;
         this.scaleTable = scaleTable;
@@ -32,11 +32,11 @@ public class HamtGetScaleScript extends AbstractHamtSearchScript {
 
     @Override
     public float runAsFloat() {
-        HamtFieldMapper.HamtFieldType fieldType = (HamtFieldMapper.HamtFieldType) (doc().mapperService().smartNameFieldType(fieldName));
+        HtableFieldMapper.HtableFieldType fieldType = (HtableFieldMapper.HtableFieldType) (doc().mapperService().smartNameFieldType(fieldName));
         if (fieldType == null) {
-            throw new IllegalStateException("No field found for [" + fieldName + "]; expected [hamt] field type");
+            throw new IllegalStateException("No field found for [" + fieldName + "]; expected [htable] field type");
         }
-        if (fieldType.valueType() != HamtFieldMapper.ValueType.BYTE) {
+        if (fieldType.valueType() != HtableFieldMapper.ValueType.BYTE) {
             throw new IllegalStateException("Only [byte] value type is supported; [" + fieldType.valueType().toString().toLowerCase() +  "] found");
         }
 
@@ -59,7 +59,7 @@ public class HamtGetScaleScript extends AbstractHamtSearchScript {
             return this.scaleTable[defaultValue & 0xff];
         }
 
-        HashTable.Reader htableReader = new TrieHashTable.Reader(data.bytes);
+        HashTable.Reader htableReader = fieldType.hashTableReader(data);
         int valueOffset = htableReader.getValueOffset(key);
         if (valueOffset == HashTable.Reader.NOT_FOUND_OFFSET) {
             return this.scaleTable[defaultValue & 0xff];
@@ -103,7 +103,7 @@ public class HamtGetScaleScript extends AbstractHamtSearchScript {
                 currentValue += step;
             }
 
-            return new HamtGetScaleScript(fieldName, key, defaultValue, scaleTable);
+            return new HtableGetScaleScript(fieldName, key, defaultValue, scaleTable);
         }
 
         @Override
