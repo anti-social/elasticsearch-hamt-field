@@ -1,4 +1,4 @@
-# Hash array mapped trie mapper type for Elasticsearch
+# Hash table mapper type for Elasticsearch
 
 Allows you to store dictionary in lucene index and then use values in scripts.
 
@@ -6,8 +6,8 @@ Allows you to store dictionary in lucene index and then use values in scripts.
 
 ```bash
 git clone https://github.com/anti-social/htalbe-java.git
-git clone https://github.com/anti-social/elasticsearch-hamt-field-mapper.git
-cd elasticsearch-hamt-field-mapper
+git clone https://github.com/anti-social/elasticsearch-htable-field-mapper.git
+cd elasticsearch-htable-field-mapper
 git checkout es-2.0
 gradle build
 ```
@@ -27,7 +27,7 @@ gradle -PesVersion=2.0.0 build
 ```json
 {
   "ranks": {
-    "type": "hamt"
+    "type": "htable"
   }
 }
 ```
@@ -35,7 +35,7 @@ gradle -PesVersion=2.0.0 build
 ```json
 {
   "ranks": {
-    "type": "hamt",
+    "type": "htable",
     "value_type": "byte"
   }
 }
@@ -43,8 +43,6 @@ gradle -PesVersion=2.0.0 build
 #### Mapping options:
 
 `value_type` - type of the stored value. Can be: `byte`, `short`, `int`, `long`, `float` and `double`. Default is `float`.
-
-`bitmask_size` - defines prefix size of bits for keys in prefix trie, for example `byte` means 3 bits prefix. Can be: `byte`, `short`, `int`, `long`. Default is `short`.
 
 You cannot specify `index` and `doc_values` options for this type of field.
 
@@ -63,16 +61,16 @@ You cannot specify `index` and `doc_values` options for this type of field.
 
 ### Script:
 
-There are two scripts: `hamt_get` and `hamt_get_scale` (only works for byte value type).
+There are two scripts: `htable_get` and `htable_get_scale` (only works for byte value type).
 
-`hamt_get` gets value from field by specified key:
+`htable_get` gets value from field by specified key:
 
 ```json
 {
   "function_score": {
     "script_score": {
-      "lang": "hamt",
-      "script": "hamt_get",
+      "lang": "htable",
+      "script": "htable_get",
       "params": {
         "field": "ranks",
         "key": 2
@@ -82,14 +80,14 @@ There are two scripts: `hamt_get` and `hamt_get_scale` (only works for byte valu
 }
 ```
 
-`hamt_get_scale` gets value and scales it in range of [`min_value`, `max_value`]. ONLY for `byte` values.
+`htable_get_scale` gets value and scales it in range of [`min_value`, `max_value`]. ONLY for `byte` values.
 
 ```json
 {
   "function_score": {
     "script_score": {
-      "lang": "hamt",
-      "script": "hamt_get_scale",
+      "lang": "htable",
+      "script": "htable_get_scale",
       "params": {
         "field": "ranks",
         "key": 1,
@@ -105,4 +103,4 @@ There are two scripts: `hamt_get` and `hamt_get_scale` (only works for byte valu
 
 1. https://idea.popcount.org/2012-07-25-introduction-to-hamt/
 2. http://lampwww.epfl.ch/papers/idealhashtrees.pdf
-3. https://github.com/anti-social/hamt-java
+3. https://github.com/anti-social/htable-java
