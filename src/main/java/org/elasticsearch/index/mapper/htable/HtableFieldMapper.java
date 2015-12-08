@@ -219,7 +219,7 @@ public class HtableFieldMapper extends FieldMapper {
                     } else {
                         bitmaskSize = TrieHashTable.BitmaskSize.SHORT;
                     }
-                    htableWriter = new TrieHashTable.Writer(bitmaskSize, valueType.valueSize);
+                    htableWriter = new TrieHashTable.Writer(valueType.valueSize, bitmaskSize);
                 }
             }
             return new HtableFieldMapper(name,
@@ -301,9 +301,9 @@ public class HtableFieldMapper extends FieldMapper {
         public HashTable.Reader hashTableReader(BytesRef data) {
             String format = dataFormatParams == null ? Defaults.FORMAT : XContentMapValues.nodeStringValue(dataFormatParams.get("format"), Defaults.FORMAT);
             if (format.equals("trie")) {
-                return new TrieHashTable.Reader(data.bytes);
+                return new TrieHashTable.Reader(data.bytes, data.offset, data.length);
             }
-            return new ChainHashTable.Reader(data.bytes);
+            return new ChainHashTable.Reader(data.bytes, data.offset, data.length);
         }
     }
 
