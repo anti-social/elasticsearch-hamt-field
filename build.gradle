@@ -5,6 +5,10 @@ version = '0.1'
 sourceCompatibility = '1.7'
 targetCompatibility = '1.7'
 
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:unchecked"
+}
+
 ext {
     defaultElasticsearchVersion = '2.0.1'
     elasticsearchVersion = project.hasProperty('esVersion') ? project.getProperty('esVersion') : defaultElasticsearchVersion
