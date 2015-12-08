@@ -246,6 +246,7 @@ public class HtableFieldMapper extends FieldMapper {
                     builder.valueType(ValueType.valueOf(propNode.toString().toUpperCase()));
                     iterator.remove();
                 } else if (propName.equals("format_params")) {
+                    @SuppressWarnings("unchecked")
                     Map<String, Object> dataFormatParams = (Map<String, Object>) propNode;
                     builder.dataFormatParams(dataFormatParams);
                     if (!dataFormatParams.containsKey("format")) {
