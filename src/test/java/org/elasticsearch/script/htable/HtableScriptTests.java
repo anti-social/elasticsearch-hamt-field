@@ -66,7 +66,7 @@ public class HtableScriptTests extends ESIntegTestCase {
                         .field("value_type", valueType);
         if (format != null) {
             builder
-                        .startObject("params")
+                        .startObject("format_params")
                             .field("format", format)
                         .endObject();
         }

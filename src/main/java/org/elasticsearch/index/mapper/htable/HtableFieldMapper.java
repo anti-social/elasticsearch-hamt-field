@@ -245,7 +245,7 @@ public class HtableFieldMapper extends FieldMapper {
                 if (propName.equals("value_type")) {
                     builder.valueType(ValueType.valueOf(propNode.toString().toUpperCase()));
                     iterator.remove();
-                } else if (propName.equals("params")) {
+                } else if (propName.equals("format_params")) {
                     Map<String, Object> dataFormatParams = (Map<String, Object>) propNode;
                     builder.dataFormatParams(dataFormatParams);
                     if (!dataFormatParams.containsKey("format")) {
@@ -416,7 +416,7 @@ public class HtableFieldMapper extends FieldMapper {
             builder.field("value_type", fieldType().valueType().toString().toLowerCase());
         }
         if (fieldType().dataFormatParams() != null) {
-            builder.field("params", fieldType().dataFormatParams());
+            builder.field("format_params", fieldType().dataFormatParams());
         }
     }
 }
