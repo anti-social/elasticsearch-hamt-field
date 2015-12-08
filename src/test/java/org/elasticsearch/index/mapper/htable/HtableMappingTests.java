@@ -162,7 +162,7 @@ public class HtableMappingTests extends ESSingleNodeTestCase {
 
         long[] keys = new long[]{ 1L, 2L, 3L };
         byte[] values = new byte[]{ (byte) 101, (byte) 102, (byte) 103 };
-        BytesRef binaryValue = new BytesRef(new TrieHashTable.Writer(TrieHashTable.BitmaskSize.SHORT, HashTable.ValueSize.BYTE)
+        BytesRef binaryValue = new BytesRef(new TrieHashTable.Writer(HashTable.ValueSize.BYTE, TrieHashTable.BitmaskSize.SHORT)
                                             .dumpBytes(keys, values));
         BytesRef indexedValue;
         XContentBuilder fieldDataBuilder;
@@ -225,7 +225,7 @@ public class HtableMappingTests extends ESSingleNodeTestCase {
 
         long[] keys = new long[]{ 1L, 2L, 3L };
         float[] values = new float[]{ 101.1f, 102.2f, 103.3f };
-        byte[] binaryValue = new TrieHashTable.Writer(TrieHashTable.BitmaskSize.SHORT, HashTable.ValueSize.INT).dumpFloats(keys, values);
+        byte[] binaryValue = new TrieHashTable.Writer(HashTable.ValueSize.INT, TrieHashTable.BitmaskSize.SHORT).dumpFloats(keys, values);
 
         XContentBuilder fieldDataBuilder = XContentFactory.jsonBuilder()
             .startObject()
