@@ -227,7 +227,7 @@ public class HtableScriptTests extends ESIntegTestCase {
         params = newHashMap();
         params.put("field", "ranks");
         params.put("key", 1);
-        params.put("default_value", 0);
+        params.put("default_value", 0.85f);
         params.put("min_value", 0.85f);
         params.put("max_value", 1.5f);
         searchResponse = client().prepareSearch("test")
@@ -248,7 +248,7 @@ public class HtableScriptTests extends ESIntegTestCase {
         params = newHashMap();
         params.put("field", "ranks");
         params.put("key", 2);
-        params.put("default_value", 0);
+        params.put("default_value", 0.85f);
         params.put("min_value", 0.85f);
         params.put("max_value", 1.5f);
         searchResponse = client().prepareSearch("test")
@@ -368,7 +368,7 @@ public class HtableScriptTests extends ESIntegTestCase {
         params = newHashMap();
         params.put("field", "ranks");
         params.put("key", 1);
-        params.put("default_value", 0);
+        params.put("default_value", 0.85f);
         params.put("min_value", 0.85f);
         params.put("max_value", 1.5f);
         searchResponse = client().prepareSearch("test")
@@ -389,7 +389,7 @@ public class HtableScriptTests extends ESIntegTestCase {
         params = newHashMap();
         params.put("field", "ranks");
         params.put("key", 2);
-        params.put("default_value", 0);
+        params.put("default_value", 0.85f);
         params.put("min_value", 0.85f);
         params.put("max_value", 1.5f);
         searchResponse = client().prepareSearch("test")
@@ -489,7 +489,7 @@ public class HtableScriptTests extends ESIntegTestCase {
         Map<String, Object> params = newHashMap();
         params.put("field", "ranks");
         params.put("key", 1);
-        params.put("default_value", 0);
+        params.put("default_value", 0.85f);
         params.put("min_value", 0.85f);
         params.put("max_value", 1.5f);
         SearchRequestBuilder searchRequestBuilder = client().prepareSearch("test")
@@ -525,7 +525,7 @@ public class HtableScriptTests extends ESIntegTestCase {
         Map<String, Object> params = newHashMap();
         params.put("field", "ranks");
         params.put("key", 1);
-        params.put("default_value", 0);
+        params.put("default_value", 0.85f);
         params.put("min_value", 0.85f);
         params.put("max_value", 1.5f);
         SearchRequestBuilder searchRequestBuilder = client().prepareSearch("test")

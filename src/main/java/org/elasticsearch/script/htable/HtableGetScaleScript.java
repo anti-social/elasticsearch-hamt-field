@@ -20,11 +20,11 @@ import org.elasticsearch.script.ScriptException;
 
 
 public class HtableGetScaleScript extends AbstractHtableSearchScript {
-    private final byte defaultValue;
+    private final float defaultValue;
 
     private final float[] scaleTable;
 
-    private HtableGetScaleScript(String fieldName, long key, byte defaultValue, float[] scaleTable) {
+    private HtableGetScaleScript(String fieldName, long key, float defaultValue, float[] scaleTable) {
         super(fieldName, key);
         this.defaultValue = defaultValue;
         this.scaleTable = scaleTable;
@@ -51,18 +51,18 @@ public class HtableGetScaleScript extends AbstractHtableSearchScript {
         }
 
         if (docValues == null) {
-            return this.scaleTable[defaultValue & 0xff];
+            return this.defaultValue;
         }
 
         BytesRef data = docValues.get(docId);
         if (data == null || data.length == 0) {
-            return this.scaleTable[defaultValue & 0xff];
+            return this.defaultValue;
         }
 
         HashTable.Reader htableReader = fieldType.hashTableReader(data);
         int valueOffset = htableReader.getValueOffset(key);
         if (valueOffset == HashTable.Reader.NOT_FOUND_OFFSET) {
-            return this.scaleTable[defaultValue & 0xff];
+            return this.defaultValue;
         }
         return this.scaleTable[htableReader.getByte(valueOffset) & 0xff];
     }
@@ -81,7 +81,7 @@ public class HtableGetScaleScript extends AbstractHtableSearchScript {
             }
             long key = params == null ? null : XContentMapValues.nodeLongValue(keyParam);
             
-            byte defaultValue = params == null ? null : XContentMapValues.nodeByteValue(params.get("default"), (byte) 0);
+            float defaultValue = params == null ? null : XContentMapValues.nodeFloatValue(params.get("default"), 0.0f);
 
             Object minValueParam = params.get("min_value");
             if (minValueParam == null) {
