@@ -5,13 +5,13 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.AbstractIndexComponent;
 import org.elasticsearch.index.Index;
 import org.elasticsearch.index.mapper.MapperService;
-import org.elasticsearch.index.settings.IndexSettings;
+import org.elasticsearch.index.settings.IndexSettingsService;
 
 
 public class RegisterHtableFieldMapper extends AbstractIndexComponent {
     @Inject
-    public RegisterHtableFieldMapper(Index index, @IndexSettings Settings indexSettings, MapperService mapperService) {
-        super(index, indexSettings);
+    public RegisterHtableFieldMapper(Index index, IndexSettingsService indexSettingsService, MapperService mapperService) {
+        super(index, indexSettingsService.getSettings());
 
         mapperService.documentMapperParser().putTypeParser("htable", new HtableFieldMapper.TypeParser());
     }

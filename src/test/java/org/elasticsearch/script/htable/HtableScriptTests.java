@@ -2,6 +2,7 @@ package org.elasticsearch.script.htable;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +13,7 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 import org.elasticsearch.plugin.mapper.MapperHtablePlugin;
+import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptService;
@@ -48,9 +50,14 @@ public class HtableScriptTests extends ESIntegTestCase {
     @Override
     protected Settings nodeSettings(int nodeOrdinal) {
         return Settings.settingsBuilder()
-                .put("plugin.types", MapperHtablePlugin.class)
                 .put(super.nodeSettings(nodeOrdinal))
                 .build();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    protected Collection<Class<? extends Plugin>> nodePlugins() {
+        return pluginList(MapperHtablePlugin.class);
     }
 
     private String typeMapping(String valueType, String format) throws IOException {

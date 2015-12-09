@@ -10,9 +10,9 @@ tasks.withType(JavaCompile) {
 }
 
 ext {
-    defaultElasticsearchVersion = '2.0.1'
+    defaultElasticsearchVersion = '2.1.0'
     elasticsearchVersion = project.hasProperty('esVersion') ? project.getProperty('esVersion') : defaultElasticsearchVersion
-    luceneVersion = '5.2.1'
+    luceneVersion = '5.3.1'
 
     pluginName = 'htable-field-mapper'
     pluginClassname = 'org.elasticsearch.plugin.mapper.MapperHtablePlugin'
