@@ -44,6 +44,48 @@ gradle -PesVersion=2.0.0 build
 
 `value_type` - type of the stored value. Can be: `byte`, `short`, `int`, `long`, `float` and `double`. Default is `float`.
 
+There are available 2 data formats:
+
+1. `chain` - the default format.
+
+```json
+{
+  "ranks": {
+    "type": "htable",
+    "value_type": "byte",
+    "format_params": {
+      "format": "chain",
+      "filling_ratio": 100
+    }
+  }
+}
+```
+
+Options for `chain` format:
+
+- `filling_ratio` - specifies minimum number of entries per hash table slot. For example, for `filling_ratio` 10 and number of entries 100 there will be 8 slots. Default is `10`.
+
+- `min_hash_table_size` - minimum number of hash table slots. If calculated number of slots is less than `min_hash_table_size` all the entries will be stored in one sorted list. Default is `2`.
+
+2. `trie` - hash array mapped trie.
+
+```json
+{
+  "ranks": {
+    "type": "htable",
+    "value_type": "byte",
+    "format_params": {
+      "format": "trie",
+      "bitmask_size": "short"
+    }
+  }
+}
+```
+
+Options for `trie` format:
+
+- `bitmask_size` - specifies number of bits to split keys. For example, `short` means the keys will be split by 4 bits. Available values: `byte`, `short`, `int`, `long`. Default is `short`.
+
 You cannot specify `index` and `doc_values` options for this type of field.
 
 ### Document:
