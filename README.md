@@ -5,7 +5,7 @@ Allows you to store dictionary in lucene index and then use values in scripts.
 ## Compilation
 
 ```bash
-git clone https://github.com/anti-social/htalbe-java.git
+git clone https://github.com/anti-social/htable-java.git
 git clone https://github.com/anti-social/elasticsearch-htable-field-mapper.git
 cd elasticsearch-htable-field-mapper
 git checkout es-2.0
