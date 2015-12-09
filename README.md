@@ -8,7 +8,9 @@ Allows you to store dictionary in lucene index and then use values in scripts.
 git clone https://github.com/anti-social/htable-java.git
 git clone https://github.com/anti-social/elasticsearch-htable-field-mapper.git
 cd elasticsearch-htable-field-mapper
-git checkout es-2.0
+git checkout es-2.1
+# if you use Elasticsearch 2.0
+# git checkout es-2.0
 gradle build
 ```
 
