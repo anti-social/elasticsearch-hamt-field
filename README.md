@@ -107,6 +107,13 @@ You cannot specify `index` and `doc_values` options for this type of field.
 
 There are two scripts: `htable_get` and `htable_get_scale` (only works for byte value type).
 
+To use them you must add next settings into your `elasticsearch.yml`:
+
+```
+script.htable.sandbox.enabled: true
+script.inline: on
+```
+
 `htable_get` gets value from field by specified key:
 
 ```json
@@ -117,7 +124,8 @@ There are two scripts: `htable_get` and `htable_get_scale` (only works for byte 
       "script": "htable_get",
       "params": {
         "field": "ranks",
-        "key": 2
+        "key": 2,
+        "default_value": 1.0
       }
     }
   }
@@ -135,6 +143,7 @@ There are two scripts: `htable_get` and `htable_get_scale` (only works for byte 
       "params": {
         "field": "ranks",
         "key": 1,
+        "default_value": 1.0,
         "min_value": 0.85,
         "max_value": 1.5
       }
